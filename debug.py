@@ -1,11 +1,11 @@
 import torch
-from rhm.datasets.hierarchical import sample_hierarchical_rules, sample_data_from_paths
+from rhm.datasets.hierarchical import sample_hierarchical_rules, sample_data_from_paths, label_from_layer_indices
 
 
 m = 3
-num_classes = 1
+num_classes = 5
 num_features = 10
-num_layers = 4
+num_layers = 5
 s = 2
 seed = 0
 
@@ -32,9 +32,10 @@ for i, tup in enumerate(all_level_tuples):
 g = torch.Generator()
 g.manual_seed(seed)
 sample_indices = torch.randperm(Pmax, generator=g)[:max_dataset_size]
+print(f"\nsample indices: {sample_indices}")
 
 
-x, targets = sample_data_from_paths(
+output = sample_data_from_paths(
     samples_indices=sample_indices,
     paths=all_level_paths,
     m=m,
@@ -42,7 +43,10 @@ x, targets = sample_data_from_paths(
     num_layers=num_layers,
     s=s,
     seed=seed,
-    seed_reset_layer=seed,
+    seed_reset_layer=42,
 )
 
-print(x.shape, targets.shape)
+x, y, labels = output['x'], output['y'], output['labels']
+print(f"x: {x.shape}")
+print(f"y: {y}")
+print(f"labels: {labels}")

@@ -8,6 +8,8 @@ import numpy as np
 
 from .utils import dec2bin
 
+from typing import List
+
 
 def sample_hierarchical_rules(num_features, num_layers, m, num_classes, s, seed=0):
     """
@@ -58,7 +60,16 @@ def sample_hierarchical_rules(num_features, num_layers, m, num_classes, s, seed=
     return all_levels_paths, all_levels_tuples
 
 
-def sample_data_from_paths(samples_indices, paths, m, num_classes, num_layers, s, seed=0, seed_reset_layer=42):
+def sample_data_from_paths(
+        samples_indices: torch.Tensor,
+        paths: List[torch.Tensor],
+        m,
+        num_classes,
+        num_layers,
+        s,
+        seed=0,
+        seed_reset_layer=42
+):
     """
     Build hierarchical dataset from features hierarchy.
     :param samples_indices: torch tensor containing indices in [0, 1, ..., Pmax - 1] of datapoints to sample
@@ -79,6 +90,8 @@ def sample_data_from_paths(samples_indices, paths, m, num_classes, num_layers, s
     groups_size = Pmax // num_classes
     y = samples_indices.div(groups_size, rounding_mode='floor')
     samples_indices = samples_indices % groups_size
+
+    all_layer_indices = [y]  # store here the path through the tree for each data-point. first element is the label. Then, the ith element is an integer up to m**(s**(i-1)) that indicates the choice made for each component of the tensor at layer i, which has size s**(i-1) (size 1 at the the first layer, which is the label).
 
     indices = []
     for l in range(num_layers):
@@ -104,6 +117,7 @@ def sample_data_from_paths(samples_indices, paths, m, num_classes, num_layers, s
 
         groups_size //= m ** (s ** l)
         layer_indices = samples_indices.div(groups_size, rounding_mode='floor')
+        all_layer_indices.append(layer_indices)
 
         rules = number2base(layer_indices, m, string_length=s ** l)
         rules = (
@@ -119,9 +133,45 @@ def sample_data_from_paths(samples_indices, paths, m, num_classes, num_layers, s
 
     yi = y[:, None].repeat(1, s ** (num_layers - 1))
     
+    # each element of indices is a 1d tensor of length s ** (num_layers - 1)
     x = x[tuple([yi, *indices])].flatten(1)
 
-    return x, y
+    all_layer_indices = torch.stack(all_layer_indices, dim=1)
+    hierarchical_labels = torch.cat([label_from_layer_indices(all_layer_indices, m, s, l).unsqueeze(1) for l in range(num_layers + 1)], dim=1)
+
+    return {'x': x, 'y': y, 'labels': hierarchical_labels}
+
+
+def label_from_layer_indices(idxs, m, s, l):
+    """
+    :param idxs: list of indices for each layer, as returned by sample_data_from_paths
+    :param m: features multiplicity
+    :param s: sub-features tuple size
+    :param l: the desired layer to get the label from
+    :return: label at depth l in the hierarchy (if l == 0, returns the original class label)
+    """
+    assert 0 <= l <= len(idxs) - 1, "Layer index out of bounds!"
+    multiplier = m ** ((s ** l - 1) // (s - 1))
+    label = idxs[:, 0] * multiplier
+    for i in range(1, l + 1):
+        multiplier //= m ** (s ** (i - 1))
+        label += idxs[:, i] * multiplier
+    return label
+
+
+def reconstruct_index_from_layer_indices(idxs, m, s, num_layers, num_classes):
+    """
+    idxs: list of indices for each layer, as returned by sample_data_from_paths
+    return: index of the data-point in the dataset, as inputted to sample_data_from_paths.
+    """
+    Pmax = m ** ((s ** num_layers - 1) // (s - 1)) * num_classes
+    groups_size = Pmax // num_classes
+    y = idxs[0]
+    index = y * groups_size
+    for l in range(num_layers):
+        groups_size //= m ** (s ** l)
+        index += idxs[l + 1] * groups_size
+    return index
 
 
 class RandomHierarchyModel(Dataset):
@@ -181,9 +231,10 @@ class RandomHierarchyModel(Dataset):
         else:
             samples_indices = samples_indices[-testsize:]
 
-        self.x, self.targets = sample_data_from_paths(
+        output = sample_data_from_paths(
             samples_indices, paths, m, num_classes, num_layers, s, seed=seed, seed_reset_layer=seed_reset_layer
         )
+        self.x, self.targets = output['x'], output['y']
 
         # encode input pairs instead of features
         if "pairs" in input_format:
