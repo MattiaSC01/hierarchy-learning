@@ -46,13 +46,16 @@ def sample_hierarchical_rules(num_features, num_layers, m, num_classes, s, seed=
 
         new_tuples = torch.tensor(new_tuples)
 
-        new_tuples = new_tuples.reshape(-1, m, s)  # [n_features l-1, m, s]
+        new_tuples = new_tuples.reshape(-1, m, s)  # [num_old_features, m, s]
 
         # next two lines needed because not all features are necessarily samples in previous level
         old_feature_to_index = dict([(e, i) for i, e in enumerate(old_features)])  # {e: i for i, e in enumerate(old_features)}
         old_paths_indices = [old_feature_to_index[f.item()] for f in old_paths]
 
-        new_paths = new_tuples[old_paths_indices]  # if a symbol appears twice, it gets the same lower level feature vector in both occurrences
+        # if a symbol appears twice, it gets the same set of m lower level feature vectors in both occurrences
+        # however, later on inside sample_data_from_paths, the choice of which of the m options to choose is 
+        # independent for each occurrence of the symbol.
+        new_paths = new_tuples[old_paths_indices]  # [len(old_paths), m, s]
 
         all_levels_tuples.append(new_tuples)
         all_levels_paths.append(new_paths)

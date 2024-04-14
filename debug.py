@@ -4,11 +4,11 @@ from rhm.datasets.hierarchical import sample_hierarchical_rules, sample_data_fro
 from rhm.datasets import RandomHierarchyModel
 
 
-m = 2
-num_classes = 5
-num_features = 3
+m = 3
+num_classes = 4
+num_features = 100
 num_layers = 3
-s = 3
+s = 2
 seed = 0
 
 max_dataset_size = 10
