@@ -85,6 +85,9 @@ def sample_data_from_paths(
 
     Pmax = m ** ((s ** num_layers - 1) // (s - 1)) * num_classes
 
+    # debugging
+    original_samples = torch.clone(samples_indices)
+
     x = paths[-1].reshape(num_classes, *sum([(m, s) for _ in range(num_layers)], ()))  # [nc, m, s, m, s, ...]
 
     groups_size = Pmax // num_classes
@@ -136,8 +139,12 @@ def sample_data_from_paths(
     # each element of indices is a 1d tensor of length s ** (num_layers - 1)
     x = x[tuple([yi, *indices])].flatten(1)
 
+    # hierarchical_labels[i, j] is the label at depth j in the hierarchy for the i-th data-point
     all_layer_indices = torch.stack(all_layer_indices, dim=1)
     hierarchical_labels = torch.cat([label_from_layer_indices(all_layer_indices, m, s, l).unsqueeze(1) for l in range(num_layers + 1)], dim=1)
+
+    assert torch.all(original_samples ==hierarchical_labels[:, -1]), "Error in the construction of the dataset!"
+    assert torch.all(hierarchical_labels[:, 0] == y), "Error in the construction of the dataset!"
 
     return {'x': x, 'y': y, 'labels': hierarchical_labels}
 
@@ -150,7 +157,6 @@ def label_from_layer_indices(idxs, m, s, l):
     :param l: the desired layer to get the label from
     :return: label at depth l in the hierarchy (if l == 0, returns the original class label)
     """
-    assert 0 <= l <= len(idxs) - 1, "Layer index out of bounds!"
     multiplier = m ** ((s ** l - 1) // (s - 1))
     label = idxs[:, 0] * multiplier
     for i in range(1, l + 1):

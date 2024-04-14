@@ -2,10 +2,10 @@ import torch
 from rhm.datasets.hierarchical import sample_hierarchical_rules, sample_data_from_paths, label_from_layer_indices
 
 
-m = 3
+m = 2
 num_classes = 5
 num_features = 10
-num_layers = 5
+num_layers = 2
 s = 2
 seed = 0
 
@@ -49,4 +49,4 @@ output = sample_data_from_paths(
 x, y, labels = output['x'], output['y'], output['labels']
 print(f"x: {x.shape}")
 print(f"y: {y}")
-print(f"labels: {labels}")
+print(f"labels:\n{labels}")
