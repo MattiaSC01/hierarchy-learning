@@ -84,8 +84,6 @@ def sample_data_from_paths(
     """
 
     Pmax = m ** ((s ** num_layers - 1) // (s - 1)) * num_classes
-
-    # debugging
     original_samples = torch.clone(samples_indices)
 
     x = paths[-1].reshape(num_classes, *sum([(m, s) for _ in range(num_layers)], ()))  # [nc, m, s, m, s, ...]
@@ -94,7 +92,9 @@ def sample_data_from_paths(
     y = samples_indices.div(groups_size, rounding_mode='floor')
     samples_indices = samples_indices % groups_size
 
-    all_layer_indices = [y]  # store here the path through the tree for each data-point. first element is the label. Then, the ith element is an integer up to m**(s**(i-1)) that indicates the choice made for each component of the tensor at layer i, which has size s**(i-1) (size 1 at the the first layer, which is the label).
+    hierarchical_labels = original_samples.div(groups_size, rounding_mode='floor').unsqueeze(1)
+
+    # all_layer_indices = [y]  # store here the path through the tree for each data-point. first element is the label. Then, the ith element is an integer up to m**(s**(i-1)) that indicates the choice made for each component of the tensor at layer i, which has size s**(i-1) (size 1 at the the first layer, which is the label).
 
     indices = []
     for l in range(num_layers):
@@ -120,7 +120,8 @@ def sample_data_from_paths(
 
         groups_size //= m ** (s ** l)
         layer_indices = samples_indices.div(groups_size, rounding_mode='floor')
-        all_layer_indices.append(layer_indices)
+        # all_layer_indices.append(layer_indices)
+        hierarchical_labels = torch.cat([hierarchical_labels, original_samples.div(groups_size, rounding_mode='floor').unsqueeze(1)], dim=1)
 
         rules = number2base(layer_indices, m, string_length=s ** l)
         rules = (
@@ -139,12 +140,13 @@ def sample_data_from_paths(
     # each element of indices is a 1d tensor of length s ** (num_layers - 1)
     x = x[tuple([yi, *indices])].flatten(1)
 
-    # hierarchical_labels[i, j] is the label at depth j in the hierarchy for the i-th data-point
-    all_layer_indices = torch.stack(all_layer_indices, dim=1)
-    hierarchical_labels = torch.cat([label_from_layer_indices(all_layer_indices, m, s, l).unsqueeze(1) for l in range(num_layers + 1)], dim=1)
+    # labels[i, j] is the label at depth j in the hierarchy for the i-th data-point
+    # all_layer_indices = torch.stack(all_layer_indices, dim=1)
+    # labels = torch.cat([label_from_layer_indices(all_layer_indices, m, s, l).unsqueeze(1) for l in range(num_layers + 1)], dim=1)
 
-    assert torch.all(original_samples ==hierarchical_labels[:, -1]), "Error in the construction of the dataset!"
+    assert torch.all(original_samples == hierarchical_labels[:, -1]), "Error in the construction of the dataset!"
     assert torch.all(hierarchical_labels[:, 0] == y), "Error in the construction of the dataset!"
+    # assert torch.all(hierarchical_labels == labels), "Error in the construction of the dataset!"
 
     return {'x': x, 'y': y, 'labels': hierarchical_labels}
 

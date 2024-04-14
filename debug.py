@@ -6,13 +6,14 @@ from rhm.datasets import RandomHierarchyModel
 
 m = 2
 num_classes = 5
-num_features = 10
+num_features = 3
 num_layers = 3
-s = 2
+s = 3
 seed = 0
 
 max_dataset_size = 10
 Pmax = m ** ((s ** num_layers - 1) // (s - 1)) * num_classes
+print(f"pmax: {Pmax}")
 
 
 all_level_paths, all_level_tuples = sample_hierarchical_rules(
@@ -64,7 +65,7 @@ dataset = RandomHierarchyModel(
     seed=seed,
 )
 
-dl = DataLoader(dataset, batch_size=2, shuffle=False)
-for batch in dl:
-    print(batch)
-    break
+# dl = DataLoader(dataset, batch_size=2, shuffle=False)
+# for batch in dl:
+#     print(batch)
+#     break
