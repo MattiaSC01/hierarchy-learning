@@ -288,7 +288,3 @@ def compute_true_occurrences(v, L, m, nc, model_seed):
     # if I don't care about space, can just flatten space dimensions (pay attention that they may not be ordered)!
     x = x.flatten(start_dim=1, end_dim=-2) # [nc, 2 ** (L-1), v ** 2]
     return x.permute(0, 2, 1) * mul # N(\alpha, \mu, j)
-
-
-if __name__ == "__main__":
-    sample_hierarchical_rules(num_features=3, num_layers=2, m=3, num_classes=2, s=2, seed=0)
