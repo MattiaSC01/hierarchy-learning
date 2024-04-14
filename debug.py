@@ -1,11 +1,13 @@
 import torch
-from rhm.datasets.hierarchical import sample_hierarchical_rules, sample_data_from_paths, label_from_layer_indices
+from torch.utils.data import DataLoader
+from rhm.datasets.hierarchical import sample_hierarchical_rules, sample_data_from_paths
+from rhm.datasets import RandomHierarchyModel
 
 
 m = 2
 num_classes = 5
 num_features = 10
-num_layers = 2
+num_layers = 3
 s = 2
 seed = 0
 
@@ -50,3 +52,19 @@ x, y, labels = output['x'], output['y'], output['labels']
 print(f"x: {x.shape}")
 print(f"y: {y}")
 print(f"labels:\n{labels}")
+
+
+dataset = RandomHierarchyModel(
+    num_features=num_features,
+    m=m,
+    num_layers=num_layers,
+    num_classes=num_classes,
+    s=s,
+    input_format='onehot',
+    seed=seed,
+)
+
+dl = DataLoader(dataset, batch_size=2, shuffle=False)
+for batch in dl:
+    print(batch)
+    break

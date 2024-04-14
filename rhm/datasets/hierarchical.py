@@ -241,6 +241,7 @@ class RandomHierarchyModel(Dataset):
             samples_indices, paths, m, num_classes, num_layers, s, seed=seed, seed_reset_layer=seed_reset_layer
         )
         self.x, self.targets = output['x'], output['y']
+        self.labels = output['labels']
 
         # encode input pairs instead of features
         if "pairs" in input_format:
@@ -282,6 +283,7 @@ class RandomHierarchyModel(Dataset):
         """
 
         x, y = self.x[idx], self.targets[idx]
+        labels = self.labels[idx]
 
         if self.transform:
             x, y = self.transform(x, y)
@@ -291,7 +293,7 @@ class RandomHierarchyModel(Dataset):
         #     g.manual_seed(idx)
         #     x += torch.randn(x.shape, generator=g) * self.background_noise
 
-        return x, y
+        return {'x': x, 'y': y, 'labels': labels}
 
 
 def pairs_to_num(xi, n):

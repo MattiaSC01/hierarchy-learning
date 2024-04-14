@@ -181,7 +181,8 @@ def train(args, trainloader, net0, criterion):
         train_loss = 0
         correct = 0
         total = 0
-        for batch_idx, (inputs, targets) in enumerate(trainloader):
+        for batch_idx, batch in enumerate(trainloader):
+            inputs, targets = batch['x'], batch['y']
             inputs, targets = inputs.to(args.device), targets.to(args.device)
             optimizer.zero_grad()
             outputs = net(inputs)
@@ -220,7 +221,8 @@ def test(args, testloader, net, criterion, print_flag=True):
     correct = 0
     total = 0
     with torch.no_grad():
-        for batch_idx, (inputs, targets) in enumerate(testloader):
+        for batch_idx, batch in enumerate(testloader):
+            inputs, targets = batch['x'], batch['y']
             inputs, targets = inputs.to(args.device), targets.to(args.device)
             outputs = net(inputs)
 
