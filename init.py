@@ -1,6 +1,6 @@
 import torch
 
-from datasets import dataset_initialization
+from rhm.datasets import dataset_initialization
 from models import model_initialization
 
 import pickle

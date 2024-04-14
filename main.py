@@ -14,7 +14,7 @@ from functools import partial
 from init import init_fun
 from optim_loss import loss_func, regularize, opt_algo, measure_accuracy
 from utils import cpu_state_dict, args2train_test_sizes
-from observables import locality_measure, state2permutation_stability, state2clustering_error
+from rhm.observables import locality_measure, state2permutation_stability, state2clustering_error
 
 def run(args):
 

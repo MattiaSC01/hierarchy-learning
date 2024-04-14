@@ -4,8 +4,8 @@ import time
 import pickle
 import torch
 from utils import format_time, args2train_test_sizes
-from datasets import dataset_initialization
-from kernels import select_kernel
+from rhm.datasets import dataset_initialization
+from rhm.kernels import select_kernel
 from sklearn.svm import SVC, LinearSVC
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")

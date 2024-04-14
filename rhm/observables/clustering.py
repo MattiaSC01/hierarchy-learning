@@ -4,8 +4,8 @@ from torch.nn import functional as F
 from torchvision.models.feature_extraction import get_graph_node_names
 from torchvision.models.feature_extraction import create_feature_extractor
 
-from datasets.hierarchical import sample_hierarchical_rules
-from datasets.utils import unique
+from rhm.datasets.hierarchical import sample_hierarchical_rules
+from rhm.datasets.utils import unique
 
 from models import model_initialization
 from sklearn.cluster import KMeans

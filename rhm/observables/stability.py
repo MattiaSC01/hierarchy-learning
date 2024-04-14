@@ -3,7 +3,7 @@ import torch
 from torchvision.models.feature_extraction import get_graph_node_names
 from torchvision.models.feature_extraction import create_feature_extractor
 
-from datasets.hierarchical import RandomHierarchyModel
+from rhm.datasets.hierarchical import RandomHierarchyModel
 from models import model_initialization
 
 

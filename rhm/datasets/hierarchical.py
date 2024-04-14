@@ -42,10 +42,10 @@ def sample_hierarchical_rules(num_features, num_layers, m, num_classes, s, seed=
 
         new_tuples = torch.tensor(new_tuples)
 
-        new_tuples = new_tuples.reshape(-1, m, s)  # [n_features l-1, m, 2]
+        new_tuples = new_tuples.reshape(-1, m, s)  # [n_features l-1, m, s]
 
         # next two lines needed because not all features are necessarily samples in previous level
-        old_feature_to_index = dict([(e, i) for i, e in enumerate(old_features)])
+        old_feature_to_index = dict([(e, i) for i, e in enumerate(old_features)])  # {e: i for i, e in enumerate(old_features)}
         old_paths_indices = [old_feature_to_index[f.item()] for f in old_paths]
 
         new_paths = new_tuples[old_paths_indices]
@@ -288,3 +288,7 @@ def compute_true_occurrences(v, L, m, nc, model_seed):
     # if I don't care about space, can just flatten space dimensions (pay attention that they may not be ordered)!
     x = x.flatten(start_dim=1, end_dim=-2) # [nc, 2 ** (L-1), v ** 2]
     return x.permute(0, 2, 1) * mul # N(\alpha, \mu, j)
+
+
+if __name__ == "__main__":
+    sample_hierarchical_rules(num_features=3, num_layers=2, m=3, num_classes=2, s=2, seed=0)

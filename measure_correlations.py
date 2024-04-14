@@ -1,5 +1,5 @@
 import torch
-from datasets import RandomHierarchyModel
+from rhm.datasets import RandomHierarchyModel
 from itertools import product
 import pandas as pd
 

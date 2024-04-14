@@ -3,7 +3,7 @@ import argparse
 import pickle
 
 from utils import args2train_test_sizes
-from datasets import dataset_initialization
+from rhm.datasets import dataset_initialization
 
 import torch
 from torch import nn
@@ -11,7 +11,7 @@ from torch import nn
 from torch.nn import functional as F
 from sklearn.cluster import KMeans
 
-from datasets.hierarchical import pairing_features
+from rhm.datasets.hierarchical import pairing_features
 
 
 def two_layers(w1, seed, x, y):
