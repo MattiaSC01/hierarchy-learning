@@ -22,7 +22,9 @@ def sample_hierarchical_rules(num_features, num_layers, m, num_classes, s, seed=
              Each layer contains all paths going from label to layer.
     """
     random.seed(seed)
+    # new_paths stores the lower level features that substitute each component of each higher level s-dimensional feature
     all_levels_paths = [torch.arange(num_classes)]
+    # new_tuples stores the rules to substitute each higher level feature with a s-dimensional vector of lower level features
     all_levels_tuples = []
     for l in range(num_layers):
         old_paths = all_levels_paths[-1].flatten()
@@ -48,7 +50,7 @@ def sample_hierarchical_rules(num_features, num_layers, m, num_classes, s, seed=
         old_feature_to_index = dict([(e, i) for i, e in enumerate(old_features)])  # {e: i for i, e in enumerate(old_features)}
         old_paths_indices = [old_feature_to_index[f.item()] for f in old_paths]
 
-        new_paths = new_tuples[old_paths_indices]
+        new_paths = new_tuples[old_paths_indices]  # if a symbol appears twice, it gets the same lower level feature vector in both occurrences
 
         all_levels_tuples.append(new_tuples)
         all_levels_paths.append(new_paths)
